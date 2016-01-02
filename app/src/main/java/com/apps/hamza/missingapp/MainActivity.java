@@ -11,6 +11,10 @@ import android.widget.TextView;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 
 public class MainActivity extends ActionBarActivity {
 
@@ -31,15 +35,16 @@ public class MainActivity extends ActionBarActivity {
         super.onStart();
         new HttpRequestTask().execute();
     }
-    private class HttpRequestTask extends AsyncTask<Void, Void, Greeting> {
+    private class HttpRequestTask extends AsyncTask<Void, Void, MissingPerson[]> {
         @Override
-        protected Greeting doInBackground(Void... params) {
+        protected MissingPerson[] doInBackground(Void... params) {
             try {
-                final String url = "http://rest-service.guides.spring.io/greeting";
+                final String url = "https://nameless-inlet-8712.herokuapp.com/resources/missingpeoples";
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                Greeting greeting = restTemplate.getForObject(url, Greeting.class);
-                return greeting;
+                MissingPerson[] mps = restTemplate.getForObject(url, MissingPerson[].class);
+                Log.i("objee",mps[0].getLastName());
+                return mps;
             } catch (Exception e) {
                 Log.e("MainActivity", e.getMessage(), e);
             }
@@ -47,11 +52,12 @@ public class MainActivity extends ActionBarActivity {
             return null;
         }
         @Override
-        protected void onPostExecute(Greeting greeting) {
+        protected void onPostExecute(MissingPerson[] mps) {
 
             TextView greetingContentText = (TextView) findViewById(R.id.hellorest);
 
-            greetingContentText.setText(greeting.getId());
+            Log.i("object",mps[1].getFirstName());
+            greetingContentText.setText(mps[1].getFirstName());
         }
 
     }
