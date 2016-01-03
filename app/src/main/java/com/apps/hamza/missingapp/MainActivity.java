@@ -43,7 +43,7 @@ public class MainActivity extends ActionBarActivity {
                 RestTemplate restTemplate = new RestTemplate();
                 restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
                 MissingPerson[] mps = restTemplate.getForObject(url, MissingPerson[].class);
-                Log.i("objee",mps[0].getLastName());
+
                 return mps;
             } catch (Exception e) {
                 Log.e("MainActivity", e.getMessage(), e);
@@ -56,8 +56,8 @@ public class MainActivity extends ActionBarActivity {
 
             TextView greetingContentText = (TextView) findViewById(R.id.hellorest);
 
-            Log.i("object",mps[1].getFirstName());
-            greetingContentText.setText(mps[1].getFirstName());
+            Log.i("address : ",mps[1].getPlaces().get(0).getAddress());
+            greetingContentText.setText(mps[1].getPlaces().get(0).getAddress());
         }
 
     }
