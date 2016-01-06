@@ -1,6 +1,10 @@
 package com.apps.hamza.missingapp;
 
 import android.annotation.TargetApi;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Message;
@@ -10,13 +14,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-
-import com.andtinder.model.CardModel;
-import com.andtinder.model.Orientations;
-import com.andtinder.view.CardContainer;
 
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -33,20 +35,29 @@ import java.util.Arrays;
 import java.util.List;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements AdapterView.OnItemClickListener {
     EditText  mTaskInput;
     ListView  mListView;
     TaskAdapter mAdapter;
+    ProgressBar progressBar;
+    Integer count =1;
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setMax(10);
+        progressBar.setProgress(4);
+        progressBar.getIndeterminateDrawable().setColorFilter((Color.parseColor("#a281d756")), PorterDuff.Mode.MULTIPLY);
 
          mTaskInput = (EditText) findViewById(R.id.task_input);
+        Typeface font = Typeface.createFromAsset(getAssets(), "Quicksand-Regular.otf");
+        mTaskInput.setTypeface(font);
          mListView = (ListView) findViewById(R.id.list);
          mAdapter = new TaskAdapter(this, new ArrayList<Todo>());
         mListView.setAdapter(mAdapter);
+        mListView.setOnItemClickListener(this);
     }
 
 
@@ -68,35 +79,58 @@ public class MainActivity extends ActionBarActivity {
         super.onStart();
         new HttpRequestTask().execute();
     }
-    private class HttpRequestTask extends AsyncTask<Void, Void, List<Todo>> {
-        @Override
-        protected List<Todo> doInBackground(Void... params) {
-            try {
-                final String url = "https://nameless-inlet-8712.herokuapp.com/resources/todos";
-                RestTemplate restTemplate = new RestTemplate();
-                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
-                Todo[] todos = restTemplate.getForObject(url, Todo[].class);
 
-                List<Todo> tds = Arrays.asList(todos);
-                return tds;
-            } catch (Exception e) {
-                Log.e("MainActivity", e.getMessage(), e);
-            }
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Todo task =mAdapter.getItem(position);
+        TextView taskDescription = (TextView) view.findViewById(R.id.task_description);
 
-            return null;
+        task.setState(!task.isState());
+
+        if(task.isState()){
+
+            taskDescription.setPaintFlags(taskDescription.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+
+        }else{
+            taskDescription.setPaintFlags(taskDescription.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
         }
 
+        //Put
+        new HttpPutTask().execute(task);
+    }
+
+    private class HttpRequestTask extends AsyncTask<Void, Void, List<Todo>> {
+        @Override
+         protected List<Todo> doInBackground(Void... params) {
+                try {
+                    final String url = "https://nameless-inlet-8712.herokuapp.com/resources/todos";
+                    RestTemplate restTemplate = new RestTemplate();
+                    restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                    Todo[] todos = restTemplate.getForObject(url, Todo[].class);
+                    List<Todo> tds = Arrays.asList(todos);
+
+                    return tds;
+                } catch (Exception e) {
+                    Log.e("MainActivity", e.getMessage(), e);
+                }
+            return null;
+        }
+        @Override
+        protected void onPreExecute() {
+    progressBar.setVisibility(ProgressBar.VISIBLE);
+        }
         @Override
         protected void onPostExecute(List<Todo> todos) {
 
+            progressBar.setVisibility(ProgressBar.INVISIBLE);
 
-            Log.i("address 1 : ", todos.get(1).getTask());
             if (todos != null) {
                 mAdapter.clear();
                 mAdapter.addAll(todos);
             }
 
         }
+
     }
 
         private class HttpPostTask extends AsyncTask<Void, Void, List<Todo>> {
@@ -106,6 +140,8 @@ public class MainActivity extends ActionBarActivity {
                     Todo t = new Todo();
                     t.setTask(mTaskInput.getText().toString());
                     t.setState(false);
+
+
                     //Post
                     final String url = "https://nameless-inlet-8712.herokuapp.com/resources/todos";
                     // Set the Content-Type header
@@ -121,8 +157,6 @@ public class MainActivity extends ActionBarActivity {
                     ResponseEntity<Todo> responseEntity = restTemplate.exchange(url, HttpMethod.POST, requestEntity, Todo.class);
                     Todo result = responseEntity.getBody();
 
-                    Log.i("response : " , result.getTask());
-                    mTaskInput.setText("");
                     return null;
                 } catch (Exception e) {
                     Log.e("MainActivity", e.getMessage(), e);
@@ -133,11 +167,47 @@ public class MainActivity extends ActionBarActivity {
             @Override
             protected void onPostExecute(List<Todo> todos) {
 
-            Log.i("post:","posting");
+                new HttpRequestTask().execute();
 
             }
             }
 
+    private class HttpPutTask extends AsyncTask<Todo, Void, List<Todo>> {
+        @Override
+        protected List<Todo> doInBackground(Todo... todos) {
+            try {
+
+
+                //Post
+                final String url = "https://nameless-inlet-8712.herokuapp.com/resources/todos/"+todos[0].getId();
+                // Set the Content-Type header
+                HttpHeaders requestHeaders = new HttpHeaders();
+                requestHeaders.setContentType(new MediaType("application","json"));
+                HttpEntity<Todo> requestEntity = new HttpEntity<Todo>(todos[0], requestHeaders);
+                 Log.i("todo:",todos[0].getTask());
+                // Create a new RestTemplate instance
+                RestTemplate restTemplate = new RestTemplate();
+                restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+                restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
+
+                ResponseEntity<Todo> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, requestEntity, Todo.class);
+                Todo result = responseEntity.getBody();
+
+
+                return null;
+            } catch (Exception e) {
+                Log.e("MainActivity", e.getMessage(), e);
+            }
+
+            return null;
+        }
+        @Override
+        protected void onPostExecute(List<Todo> todos) {
+
+            new HttpRequestTask().execute();
+
+        }
+    }
 
 
 
@@ -149,8 +219,8 @@ public class MainActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.action_refresh) {
+            new HttpRequestTask().execute();
         }
 
         return super.onOptionsItemSelected(item);

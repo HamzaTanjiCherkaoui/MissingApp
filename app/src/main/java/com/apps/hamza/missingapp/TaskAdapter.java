@@ -7,6 +7,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,6 +35,8 @@ public class TaskAdapter extends ArrayAdapter<Todo> {
         TextView descriptionView = (TextView) convertView.findViewById(R.id.task_description);
 
         descriptionView.setText(task.getTask());
+        Typeface font = Typeface.createFromAsset(getContext().getAssets(), "Quicksand-Bold.otf");
+        descriptionView.setTypeface(font);
 
         if(task.isState()){
             descriptionView.setPaintFlags(descriptionView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);

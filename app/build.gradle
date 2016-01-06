@@ -31,6 +31,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.3.2'
-    compile 'com.github.kikoso:SwipeableCards:1.1-RELEASE@aar'
+
 
 }
