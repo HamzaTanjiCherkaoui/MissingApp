@@ -12,7 +12,7 @@ The Android Rest Client is a simple application to consume a Rest WebService on 
 clone the project localy using git : 
 
 ```
-git clone https://github.com/HamzaTanjiCherkaoui/todo-App-Rest-Android-Client.git
+$ git clone https://github.com/HamzaTanjiCherkaoui/todo-App-Rest-Android-Client.git
 
 ```
 or just download as a zip from github .
