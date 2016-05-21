@@ -1,0 +1,6 @@
+{
+  "name": "Todo-app-rest-android-client",
+  "tagline": "The Android Rest Client ",
+  "body": "# todo-App-Rest-Android-Client\r\nThe Android Rest Client is a simple application to consume a Rest WebService on android : \r\n\r\n## the used  librairies : \r\n\r\n  - Jersey \r\n  - Jackson \r\n  - Spring restTemplate\r\n\r\n## Installation : \r\n \r\nclone the project localy using git : \r\n\r\n```\r\n$ git clone https://github.com/HamzaTanjiCherkaoui/todo-App-Rest-Android-Client.git\r\n\r\n```\r\nor just download as a zip from github .\r\n\r\nand finally , import the project on AndroidStudio\r\n\r\n\r\n\r\n\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
